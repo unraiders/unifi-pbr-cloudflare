@@ -1,0 +1,16 @@
+# Mac OS
+.DS_Store
+
+# Project files
+gunicorn.conf.py
+
+# Ruff files
+.ruff_cache
+pyproject.toml
+
+# Environments files
+.venv
+.env
+
+# Python cache
+__pycache__/

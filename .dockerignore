@@ -1,0 +1,9 @@
+# Ignore everything
+*
+
+# Allow only specific files
+!config.py
+!entrypoint.sh
+!requirements.txt
+!unifi-pbr-cloudflare.py
+!utils.py

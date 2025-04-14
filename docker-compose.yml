@@ -1,0 +1,10 @@
+services:
+  unifi-pbr-cloudflare:
+    image: unraiders/unifi-pbr-cloudflare
+    container_name: unifi-pbr-cloudflare
+    env_file:
+      - .env
+    ports:
+      - 1666:1666
+    network_mode: bridge
+    restart: unless-stopped

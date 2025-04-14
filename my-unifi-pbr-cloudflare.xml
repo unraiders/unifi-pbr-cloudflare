@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>unifi-pbr-cloudflare</Name>
+  <Repository>unraiders/unifi-pbr-cloudflare</Repository>
+  <Registry>https://hub.docker.com/r/unraiders/unifi-pbr-cloudflare/</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/unraiders/unifi-pbr-cloudflare</Support>
+  <Project>https://github.com/unraiders/unifi-pbr-cloudflare</Project>
+  <Overview>Control enable/disable de rutas basadas en políticas en routers Unifi a través del servicio de Uptime Kuma enviando un webhook cuando caen los proxys de Cloudflare.</Overview>
+  <Category>Downloaders: Tools:</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/unraiders/unifi-pbr-cloudflare/master/my-unifi-pbr-cloudflare.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/unraiders/unifi-pbr-cloudflare/master/imagenes/unifi-pbr-cloudflare.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1702220612</DateInstalled>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Control enable/disable de rutas basadas en políticas en routers Unifi a través del servicio de Uptime Kuma enviando un webhook cuando caen los proxys de Cloudflare.</Description>
+  <Config Name="WEBHOOK_PORT" Target="1666" Default="1666" Mode="tcp" Description="Puerto en el contenedor para el webhook de Uptime Kuma" Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="UNIFI_URL" Target="UNIFI_URL" Default="" Mode="" Description="Host/IP del router de Unifi. Importante https Ejemplo: https://192.168.2.20" Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="UNIFI_API_TOKEN" Target="UNIFI_API_TOKEN" Default="" Mode="" Description="Token para el acceso a Unifi a través de la API." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="NOMBRE_PBR" Target="NOMBRE_PBR" Default="" Mode="" Description="Nombre de la Policy-Based Routing (PBR) en Unifi que se quiere controlar." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="WORKERS" Target="WORKERS" Default="1" Mode="" Description="Número de peticiones simultáneas." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="DEBUG" Target="DEBUG" Default="0" Mode="" Description="Habilita el modo Debug en el log. (0 = No / 1 = Si)" Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="TZ" Target="TZ" Default="Europe/Madrid" Mode="" Description="Timezone (Por ejemplo: Europe/Madrid)" Type="Variable" Display="always" Required="true" Mask="false"/>
+</Container>
