@@ -19,9 +19,15 @@ jobs:
         id: get_version
         run: |
           VERSION=$(grep "ARG VERSION=" Dockerfile | cut -d= -f2)
-          LAST_ACTION=$(grep "ARG LAST_ACTION=" Dockerfile | cut -d= -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "last_action=$LAST_ACTION" >> $GITHUB_OUTPUT
+
+      - name: Get Release Description
+        id: get_release_notes
+        run: |
+          RELEASE_NOTES=$(cat RELEASE.md)
+          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Tag
         run: |
@@ -35,7 +41,7 @@ jobs:
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
           name: v${{ steps.get_version.outputs.version }}
-          body: ${{ steps.get_version.outputs.last_action }}
+          body: ${{ steps.get_release_notes.outputs.release_notes }}
           draft: false
           prerelease: false
         env:
