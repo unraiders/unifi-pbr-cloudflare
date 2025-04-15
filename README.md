@@ -2,22 +2,22 @@
 
 Utilidad para cambiar el estado enable / disable de la ruta basada en política (Policy-Based Routing - PBR) de los routers Unifi mediante el uso de un Webhook enviado desde Uptime Kuma haciendo uso del servicio de notificaciones, con esto conseguimos activar una ruta de salida a Internet que tengamos configurada como VPN por ejemplo cuando se bloquean las IP's de Cloudflare los fines de semana.
 
-1 - En nuestro usuario en Unifi creamos una API KEY, menú Configuración, vamos a Admins & Users, hacemos click en nuestro usuario y en la ventana lateral que aparece vamos a Control Plane API Key, botón "Create New", le pones un nombre y Crear, copia la KEY que la necesitaremos luego para la variable UNIFI_API_TOKEN.
+**1** - En nuestro usuario en Unifi creamos una API KEY, menú Configuración, vamos a Admins & Users, hacemos click en nuestro usuario y en la ventana lateral que aparece vamos a Control Plane API Key, botón "Create New", le pones un nombre y Crear, copia la KEY que la necesitaremos luego para la variable UNIFI_API_TOKEN.
 
-2 - Instalamos el docker mediante el docker-compose.yml o mediante la plantilla de Unraid, abajo está la descripción de cada variable.
+**2** - Instalamos el docker mediante el docker-compose.yml o mediante la plantilla de Unraid, abajo está la descripción de cada variable.
 
-3 - Nos vamos a Uptime Kuma y en Ajustes -> Notificaciones, botón "Configurar notificacion":
+**3** - Nos vamos a Uptime Kuma y en Ajustes -> Notificaciones, botón "Configurar notificacion":
 
-    - Tipo de notificacacion: Webhook
-    - Nombre sencillo: El nombre que quieras ponerle a la notificación.
-    - URL Post: La URL con la IP de la máquina donde está corriendo el Docker, el puerto que expones en ese Docker y /api/route, quedando por ejemplo así: http://192.168.6.19:1666/api/route
-    - Request Body: Preset - application/json
+- Tipo de notificacacion: Webhook
+- Nombre sencillo: El nombre que quieras ponerle a la notificación.
+- URL Post: La URL con la IP de la máquina donde está corriendo el Docker, el puerto que expones en ese Docker y /api/route, quedando por ejemplo así: http://192.168.6.19:1666/api/route
+- Request Body: Preset - application/json
 
-    Si ya hemos levantado el Docker y le damos al botón Test nos tiene que salir en los logs del contenedor: [INFO] Prueba desde Uptime Kuma satisfactoria.
+Si ya hemos levantado el Docker y le damos al botón Test nos tiene que salir en los logs del contenedor: [INFO] Prueba desde Uptime Kuma satisfactoria.
 
-4 - Ahora nos vamos a uno de los monitores que tenemos configurados y que esté chequeando una IP de Cloudflare de las que bloquean cada fin de semana. editamos y arriba a la derecha en Notificaciones activamos la que acabamos de crear.
+**4** - Ahora nos vamos a uno de los monitores que tenemos configurados y que esté chequeando una IP de Cloudflare de las que bloquean cada fin de semana. editamos y arriba a la derecha en Notificaciones activamos la que acabamos de crear.
 
-Si no quieres esperar al fin de semana y quieres hacer una prueba, activa esa Notificación en algún monitor de algún servicio tuyo que puedas parar y te tiene que poner en el router de Unifi la ruta que hayas especificado en la variable NOMBRE_PBR como activa al hacer Down el servicio y a la inversa, cuando el servicio vuelva a estar UP se tiene que desactivar la ruta en el router de Unifi. 
+Si no quieres esperar al fin de semana y quieres hacer una prueba, activa esa Notificación en algún monitor de algún servicio tuyo que puedas parar y te tiene que poner en el router de Unifi la ruta que hayas especificado en la variable **NOMBRE_PBR** como activa al hacer Down el servicio y a la inversa, cuando el servicio vuelva a estar UP se tiene que desactivar la ruta en el router de Unifi. 
 
 ### Configuración variables de entorno en fichero .env (renombrar el env-example a .env)
 
@@ -91,15 +91,15 @@ wget -O /boot/config/plugins/dockerMan/templates-user/my-unifi-pbr-cloudflare.xm
 
 ## Imágenes
 
-![alt text](https://github.com/unraiders/unifi-pbr-cloudflare/imagenes/log_unifi-pbr-cloudflare.png)
-Log contenedor
+![alt text](https://github.com/unraiders/unifi-pbr-cloudflare/blob/main/imagenes/log_unifi-pbr-cloudflare.png)
+**Log contenedor**
 
 ---
 
-![alt text](https://github.com/unraiders/unifi-pbr-cloudflare/imagenes/rutas_unifi-pbr-cloudflare.png)
-Rutas en el router Unifi
+![alt text](https://github.com/unraiders/unifi-pbr-cloudflare/blob/main/imagenes/rutas_unifi-pbr-cloudflare.png)
+**Rutas en el router Unifi**
 
 ---
 
-![alt text](https://github.com/unraiders/unifi-pbr-cloudflare/imagenes/webhook_unifi-pbr-cloudflare.png)
-Configuración Notificación en Uptime Kuma
+![alt text](https://github.com/unraiders/unifi-pbr-cloudflare/blob/main/imagenes/webhook_unifi-pbr-cloudflare.png)
+**Configuración Notificación en Uptime Kuma**
