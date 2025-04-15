@@ -1,6 +1,6 @@
 # UNIFI-PBR-CLOUDFLARE
 
-Utilidad para cambiar el estado enable / disable de la ruta basada en política (Policy-Based Routing - PBR) de los routers Unifi mediante el uso de un Webhook enviado desde Uptime Kuma haciendo uso del servicio de noticaciones, con esto conseguimos activar una ruta de salida a Internet que tengamos configurada como VPN por ejemplo cuando se bloquean las IP's de Cloudflare los fines de semana.
+Utilidad para cambiar el estado enable / disable de la ruta basada en política (Policy-Based Routing - PBR) de los routers Unifi mediante el uso de un Webhook enviado desde Uptime Kuma haciendo uso del servicio de notificaciones, con esto conseguimos activar una ruta de salida a Internet que tengamos configurada como VPN por ejemplo cuando se bloquean las IP's de Cloudflare los fines de semana.
 
 1 - En nuestro usuario en Unifi creamos una API KEY, menú Configuración, vamos a Admins & Users, hacemos click en nuestro usuario y en la ventana lateral que aparece vamos a Control Plane API Key, botón "Create New", le pones un nombre y Crear, copia la KEY que la necesitaremos luego para la variable UNIFI_API_TOKEN.
 
@@ -13,7 +13,7 @@ Utilidad para cambiar el estado enable / disable de la ruta basada en política 
     - URL Post: La URL con la IP de la máquina donde está corriendo el Docker, el puerto que expones en ese Docker y /api/route, quedando por ejemplo así: http://192.168.6.19:1666/api/route
     - Request Body: Preset - application/json
 
-    Si ya hemos levantado el Docker y le damos a Test nos tiene que salir en los logs del contenedor [INFO] Prueba desde Uptime Kuma satisfactoria.
+    Si ya hemos levantado el Docker y le damos al botón Test nos tiene que salir en los logs del contenedor: [INFO] Prueba desde Uptime Kuma satisfactoria.
 
 4 - Ahora nos vamos a uno de los monitores que tenemos configurados y que esté chequeando una IP de Cloudflare de las que bloquean cada fin de semana. editamos y arriba a la derecha en Notificaciones activamos la que acabamos de crear.
 
