@@ -1,6 +1,6 @@
-import random
 import contextvars
 import logging
+import random
 
 from colorama import Fore, Style, init
 

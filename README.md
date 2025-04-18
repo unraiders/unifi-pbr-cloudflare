@@ -1,6 +1,6 @@
 # UNIFI-PBR-CLOUDFLARE
 
-Utilidad para cambiar el estado enable / disable de la ruta basada en política (Policy-Based Routing - PBR) de los routers Unifi mediante el uso de un Webhook enviado desde Uptime Kuma haciendo uso del servicio de notificaciones con notificación del evento de activación o desactivación de la ruta en Unifi a Telegram, con esto conseguimos activar una ruta de salida a Internet que tengamos configurada como VPN por ejemplo cuando se bloquean las IP's de Cloudflare los fines de semana.
+Utilidad para cambiar el estado enable / disable de la ruta basada en política (Policy-Based Routing - PBR) de los routers Unifi mediante el uso de un Webhook enviado desde Uptime Kuma haciendo uso del servicio de notificaciones con notificación del evento de activación o desactivación de la ruta en Unifi a Telegram o Discord, con esto conseguimos activar una ruta de salida a Internet que tengamos configurada como VPN por ejemplo cuando se bloquean las IP's de Cloudflare los fines de semana.
 
 **1** - En nuestro usuario en Unifi creamos una API KEY, menú Configuración, vamos a Admins & Users, hacemos click en nuestro usuario y en la ventana lateral que aparece vamos a Control Plane API Key, botón "Create New", le pones un nombre y Crear, copia la KEY que la necesitaremos luego para la variable UNIFI_API_TOKEN.
 
@@ -27,8 +27,10 @@ Si no quieres esperar al fin de semana y quieres hacer una prueba, activa esa No
 | UNIFI_API_TOKEN         |     ✅    | v0.1.0  | Token para el acceso a Unifi a través de la API.                            |
 | NOMBRE_PBR              |     ✅    | v0.1.0  | Nombre de la Policy-Based Routing (PBR) en Unifi que se quiere controlar.   |
 | WORKERS                 |     ✅    | v0.1.0  | Número de peticiones simultáneas. (podemos dejarlo en 1)                    |
+| CLIENTE_NOTIFICACION    |     ❌    | v0.3.0  | Cliente de notificaciones. (telegram o discord)                             |
 | TELEGRAM_BOT_TOKEN      |     ❌    | v0.2.0  | Token del bot de Telegram.                                                  |
-| TELEGRAM_CHAT_ID        |     ❌    | v0.2.0  | ID del chat de Telegram.                                                    |  
+| TELEGRAM_CHAT_ID        |     ❌    | v0.2.0  | ID del chat de Telegram.                                                    |
+| DISCORD_WEBHOOK         |     ❌    | v0.3.0  | Discord Webhook.                                                            |
 | DEBUG                   |     ✅    | v0.1.0  | Habilita el modo Debug en el log. (0 = No / 1 = Si)                         |
 | TZ                      |     ✅    | v0.1.0  | Timezone (Por ejemplo: Europe/Madrid)                                       |
 
@@ -70,8 +72,10 @@ services:
         - UNIFI_URL=
         - UNIFI_API_TOKEN=
         - NOMBRE_PBR=
+        - CLIENTE_NOTIFICACION=
         - TELEGRAM_BOT_TOKEN=
         - TELEGRAM_CHAT_ID=
+        - DISCORD_WEBHOOK=
         - WORKERS=1
         - DEBUG=0
         - TZ=Europe/Madrid
@@ -90,6 +94,17 @@ services:
 wget -O /boot/config/plugins/dockerMan/templates-user/my-unifi-pbr-cloudflare.xml https://raw.githubusercontent.com/unraiders/unifi-pbr-cloudflare/refs/heads/main/my-unifi-pbr-cloudflare.xml
 ```
 - Nos vamos a DOCKER y abajo a la izquierda tenemos el botón "AGREGAR CONTENEDOR" hacemos click y en seleccionar plantilla seleccionamos unifi-pbr-cloudflare y rellenamos las variables de entorno necesarias, tienes una explicación en cada variable en la propia plantilla.
+
+---
+
+  > [!IMPORTANT]
+  > Si seleccionas Discord como destino de tus notificaciones tienes que crear un webhook en el canal que tengas dentro de tu
+  > servidor de Discord, nos vamos dentro de nuestro servidor al canal elegido y le damos a la rueda para editar el canal, una vez 
+  > dentro nos vamos a Integraciones -> Webhooks y botón "Nuevo webhook", entramos dentro de el, podemos editar el nombre y el 
+  > canal donde publicará ese webhook, ya está, le damos al botón "Copiar URL de webhook" y esa URL la pegamos en la variable 
+  > DISCORD_WEBHOOK.
+
+---
 
 ---
 

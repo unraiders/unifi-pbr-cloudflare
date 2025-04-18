@@ -1,8 +1,10 @@
 UNIFI_URL= URL acceso Unifi
 UNIFI_API_TOKEN= Token acceso Unifi
 NOMBRE_PBR= Nombre del Policy-Based Routing
+CLIENTE_NOTIFICACION= telegram / discord
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
+DISCORD_WEBHOOK=
 WORKERS=1 # Número de peticiones simultáneas
 DEBUG=1 # Salida del log: 0 = normal / 1 = detalle
 TZ=Europe/Madrid
