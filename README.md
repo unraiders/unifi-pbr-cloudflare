@@ -1,6 +1,6 @@
 # UNIFI-PBR-CLOUDFLARE
 
-Utilidad para cambiar el estado enable / disable de la ruta basada en política (Policy-Based Routing - PBR) de los routers Unifi mediante el uso de un Webhook enviado desde Uptime Kuma haciendo uso del servicio de notificaciones, con esto conseguimos activar una ruta de salida a Internet que tengamos configurada como VPN por ejemplo cuando se bloquean las IP's de Cloudflare los fines de semana.
+Utilidad para cambiar el estado enable / disable de la ruta basada en política (Policy-Based Routing - PBR) de los routers Unifi mediante el uso de un Webhook enviado desde Uptime Kuma haciendo uso del servicio de notificaciones con notificación del evento de activación o desactivación de la ruta en Unifi a Telegram, con esto conseguimos activar una ruta de salida a Internet que tengamos configurada como VPN por ejemplo cuando se bloquean las IP's de Cloudflare los fines de semana.
 
 **1** - En nuestro usuario en Unifi creamos una API KEY, menú Configuración, vamos a Admins & Users, hacemos click en nuestro usuario y en la ventana lateral que aparece vamos a Control Plane API Key, botón "Create New", le pones un nombre y Crear, copia la KEY que la necesitaremos luego para la variable UNIFI_API_TOKEN.
 
@@ -23,12 +23,14 @@ Si no quieres esperar al fin de semana y quieres hacer una prueba, activa esa No
 
 | VARIABLE                | NECESARIA | VERSIÓN | VALOR |
 |:----------------------- |:---------:| :------:| :-------------|
-| UNIFI_URL               |     ✅    | v0.1.0  | Host/IP del router de Unifi. Importante https Ejemplo: https://192.168.2.20               |
-| UNIFI_API_TOKEN         |     ✅    | v0.1.0  | Token para el acceso a Unifi a través de la API.                         |
-| NOMBRE_PBR              |     ✅    | v0.1.0  | Nombre de la Policy-Based Routing (PBR) en Unifi que se quiere controlar.|
-| WORKERS                 |     ✅    | v0.1.0  | Número de peticiones simultáneas. (podemos dejarlo en 1)                 |
-| DEBUG                   |     ✅    | v0.1.0  | Habilita el modo Debug en el log. (0 = No / 1 = Si) |
-| TZ                      |     ✅    | v0.1.0  | Timezone (Por ejemplo: Europe/Madrid) |
+| UNIFI_URL               |     ✅    | v0.1.0  | Host/IP del router de Unifi. Importante https Ejemplo: https://192.168.2.20 |
+| UNIFI_API_TOKEN         |     ✅    | v0.1.0  | Token para el acceso a Unifi a través de la API.                            |
+| NOMBRE_PBR              |     ✅    | v0.1.0  | Nombre de la Policy-Based Routing (PBR) en Unifi que se quiere controlar.   |
+| WORKERS                 |     ✅    | v0.1.0  | Número de peticiones simultáneas. (podemos dejarlo en 1)                    |
+| TELEGRAM_BOT_TOKEN      |     ❌    | v0.2.0  | Token del bot de Telegram.                                                  |
+| TELEGRAM_CHAT_ID        |     ❌    | v0.2.0  | ID del chat de Telegram.                                                    |  
+| DEBUG                   |     ✅    | v0.1.0  | Habilita el modo Debug en el log. (0 = No / 1 = Si)                         |
+| TZ                      |     ✅    | v0.1.0  | Timezone (Por ejemplo: Europe/Madrid)                                       |
 
 La VERSIÓN indica cuando se añadió esa variable o cuando sufrió alguna actualización. Consultar https://github.com/unraiders/unifi-pbr-cloudflare/releases
 
@@ -68,6 +70,8 @@ services:
         - UNIFI_URL=
         - UNIFI_API_TOKEN=
         - NOMBRE_PBR=
+        - TELEGRAM_BOT_TOKEN=
+        - TELEGRAM_CHAT_ID=
         - WORKERS=1
         - DEBUG=0
         - TZ=Europe/Madrid

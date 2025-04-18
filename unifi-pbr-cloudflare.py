@@ -1,10 +1,12 @@
 import requests
 import urllib3
 import json
+import time
 from flask import Flask, request, jsonify
+import telebot
 
 from utils import setup_logger, generate_trace_id
-from config import UNIFI_URL, UNIFI_API_TOKEN, NOMBRE_PBR
+from config import UNIFI_URL, UNIFI_API_TOKEN, NOMBRE_PBR, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, INITIAL_DELAY
 
 logger = setup_logger(__name__)
 
@@ -78,6 +80,28 @@ def update_traffic_route_status(route_data, enabled=False):
         error_msg = f"Excepción al actualizar PBR {route_data['description']}: {str(e)}"
         logger.error(error_msg)
         return False, {"error": error_msg}
+    
+def send_notification(message, parse_mode=None, retries=4, delay=2.0, initial_delay=INITIAL_DELAY):
+    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+        
+        if initial_delay > 0:
+            time.sleep(initial_delay)
+        
+        for attempt in range(retries):
+            try:
+                bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+                bot.send_message(TELEGRAM_CHAT_ID, message, parse_mode=parse_mode)
+                logger.info(f"Notificación enviada a Telegram correctamente.")
+                return True
+            except Exception as e:
+                logger.debug(f"Notificación enviada a Telegram: {message}")
+                logger.debug(f"Intento {attempt+1}/{retries}: Error al enviar notificación a Telegram: {str(e)}")
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                else:
+                    logger.error(f"Error al enviar notificación a Telegram después de {retries} intentos: {str(e)}")
+                    return False
+    return False
 
 def create_app():
     """Crea y configura la aplicación Flask."""
@@ -103,14 +127,14 @@ def create_app():
 
         # Manejar el caso de prueba de conexión
         if data.get('heartbeat') is None and data.get('monitor') is None and 'msg' in data:
-            logger.info("Prueba desde Uptime Kuma satisfactoria")
-            return jsonify({"message": "Prueba de conexión recibida correctamente"}), 200
+            logger.info("Prueba desde Uptime Kuma satisfactoria.")
+            return jsonify({"message": "Prueba de conexión recibida correctamente."}), 200
 
         # Validación del payload normal
         if 'heartbeat' not in data:
-            return jsonify({"error": "El campo 'heartbeat' es requerido"}), 400
+            return jsonify({"error": "El campo 'heartbeat' es requerido."}), 400
         if 'status' not in data['heartbeat']:
-            return jsonify({"error": "El campo 'status' en heartbeat es requerido"}), 400
+            return jsonify({"error": "El campo 'status' en heartbeat es requerido."}), 400
         
         # El status 0 significa DOWN (activar regla), status 1 significa UP (desactivar regla)
         enabled = data['heartbeat']['status'] == 0
@@ -122,9 +146,10 @@ def create_app():
             if route['description'] == NOMBRE_PBR:
                 success, response = update_traffic_route_status(route, enabled)
                 if success:
-                    logger.info(f"Regla '{NOMBRE_PBR}' {'activada' if enabled else 'desactivada'} correctamente")              
+                    logger.info(f"Regla '{NOMBRE_PBR}' {'activada' if enabled else 'desactivada'} correctamente")
+                    send_notification(f"Regla *{NOMBRE_PBR}* {'activada' if enabled else 'desactivada'} correctamente en Unifi {UNIFI_URL}", parse_mode="Markdown")             
                     return jsonify({
-                        "message": f"Regla '{NOMBRE_PBR}' {'activada' if enabled else 'desactivada'} correctamente",
+                        "message": f"Regla '{NOMBRE_PBR}' {'activada' if enabled else 'desactivada'} correctamente.",
                         "data": response
                     }), 200 
                 else:

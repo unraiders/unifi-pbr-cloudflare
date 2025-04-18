@@ -1,10 +1,12 @@
 FROM python:3.13-alpine
 
 LABEL maintainer="unraiders"
-LABEL description="Control enable/disable de rutas basadas en políticas en Unifi a través del servicio de Uptime Kuma enviando un webhook cuando caen los proxys de Cloudflare."
+LABEL description="Control enable/disable de rutas basadas en políticas en Unifi a través del servicio de Uptime Kuma enviando un webhook cuando caen los proxys de Cloudflare con notificación a Telegram."
 
-ARG VERSION=0.1.0 
+ARG VERSION=0.2.0 
 ENV VERSION=${VERSION}
+
+RUN apk add --no-cache mc
 
 RUN adduser -D tebas_user
 
