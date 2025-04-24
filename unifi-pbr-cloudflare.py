@@ -6,6 +6,7 @@ import telebot
 import urllib3
 from flask import Flask, jsonify, request
 
+from cloudflare_zones import procesar_zonas
 from config import (
     CLIENTE_NOTIFICACION,
     DISCORD_WEBHOOK,
@@ -16,7 +17,10 @@ from config import (
     TELEGRAM_CHAT_ID,
     UNIFI_API_TOKEN,
     UNIFI_URL,
+    check_cloudflare_config,
+    check_unifi_config,
 )
+from ip_info import obtener_ip_publica
 from utils import generate_trace_id, setup_logger
 
 logger = setup_logger(__name__)
@@ -27,7 +31,7 @@ verify_ssl = False
 
 def get_traffic_routes():
     # Obtiene todas las reglas PBR configuradas en Unifi.
-    generate_trace_id()
+
     url = f"{UNIFI_URL}/proxy/network/v2/api/site/default/trafficroutes"
     headers = {
         "X-API-KEY": UNIFI_API_TOKEN,
@@ -47,14 +51,7 @@ def get_traffic_routes():
         return []
 
 def update_traffic_route_status(route_data, enabled=False):
-    """
-    Actualiza el estado de una regla PBR específica en Unifi.
 
-    Args:
-        route_data (dict): Datos completos de la regla PBR
-        enabled (bool): True para activar la regla, False para desactivarla
-    """
-    generate_trace_id()
     url = f"{UNIFI_URL}/proxy/network/v2/api/site/default/trafficroutes/{route_data['_id']}"
     headers = {
         "X-API-KEY": UNIFI_API_TOKEN,
@@ -62,7 +59,6 @@ def update_traffic_route_status(route_data, enabled=False):
         "Content-Type": "application/json"
     }
 
-    # Mantenemos todos los datos de la regla y solo modificamos enabled
     payload = route_data.copy()
     payload['enabled'] = enabled
 
@@ -92,8 +88,7 @@ def update_traffic_route_status(route_data, enabled=False):
         logger.error(error_msg)
         return False, {"error": error_msg}
 
-def send_notification(message, parse_mode=None, retries=4, delay=2.0, initial_delay=INITIAL_DELAY):
-
+def send_notification(message, title, parse_mode=None, retries=4, delay=2.0, initial_delay=INITIAL_DELAY):
     if CLIENTE_NOTIFICACION:
         if CLIENTE_NOTIFICACION == "telegram":
             if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
@@ -125,7 +120,7 @@ def send_notification(message, parse_mode=None, retries=4, delay=2.0, initial_de
                         "avatar_url": IMG_DISCORD_URL,
                         "embeds": [
                             {
-                                "title": "Estado RUTA UNIFI",
+                                "title": title,
                                 "description": message,
                                 "color": 6018047,
                                 "thumbnail": {"url": IMG_DISCORD_URL}
@@ -145,63 +140,130 @@ def send_notification(message, parse_mode=None, retries=4, delay=2.0, initial_de
         else:
             logger.error(f"Cliente de notificación no soportado: {CLIENTE_NOTIFICACION}")
 
-def create_app():
-    """Crea y configura la aplicación Flask."""
-    app = Flask(__name__)
+def process_webhook_data(data):
 
-    @app.route('/api/route', methods=['POST'])
-    def update_route():
-        """
-        Endpoint que recibe webhooks de Uptime Kuma y actualiza el estado de la regla PBR.
-        También maneja las pruebas de conexión del webhook.
-        El estado se determina por el campo status en el heartbeat:
-        - status = 0 (DOWN) -> activar regla
-        - status = 1 (UP) -> desactivar regla
-        """
-        generate_trace_id()
+    # Verificar si es una prueba de conexión
+    if data.get('heartbeat') is None and data.get('monitor') is None and 'msg' in data:
+        return True, True, False, "Prueba de conexión recibida correctamente."
 
-        if not request.is_json:
-            return jsonify({"error": "El contenido debe ser JSON."}), 400
+    # Verificar que los datos contengan la estructura esperada
+    if 'heartbeat' not in data:
+        return False, False, False, "El campo 'heartbeat' es requerido."
+    if 'status' not in data['heartbeat']:
+        return False, False, False, "El campo 'status' en heartbeat es requerido."
 
+    # El status 0 significa DOWN (activar regla), status 1 significa UP (desactivar regla)
+    enabled = data['heartbeat']['status'] == 0
+    estado_webhook = 'activado' if enabled else 'desactivado'
+
+    message = f"Estado recibido: {'DOWN' if enabled else 'UP'} - La regla debe ser {estado_webhook}"
+    return True, False, enabled, message
+
+app = Flask(__name__)
+
+@app.route('/api/route', methods=['POST'])
+def process_webhook():
+
+    generate_trace_id()
+
+    try:
         data = request.get_json()
-        formatted_json = json.dumps(data, indent=4, ensure_ascii=False)
-        logger.debug(f"Payload recibido de Uptime Kuma:\n\n{formatted_json}\n.")
+    except Exception:
+        return jsonify({"error": "El contenido debe ser JSON."}), 400
 
-        # Manejar el caso de prueba de conexión
-        if data.get('heartbeat') is None and data.get('monitor') is None and 'msg' in data:
-            logger.info("Prueba desde Uptime Kuma satisfactoria.")
-            return jsonify({"message": "Prueba de conexión recibida correctamente."}), 200
+    formatted_json = json.dumps(data, indent=4, ensure_ascii=False)
+    logger.debug(f"Payload recibido:\n\n{formatted_json}\n.")
 
-        # Validación del payload normal
-        if 'heartbeat' not in data:
-            return jsonify({"error": "El campo 'heartbeat' es requerido."}), 400
-        if 'status' not in data['heartbeat']:
-            return jsonify({"error": "El campo 'status' en heartbeat es requerido."}), 400
+    # Procesar los datos del webhook
+    is_valid, is_test, enabled, message = process_webhook_data(data)
 
-        # El status 0 significa DOWN (activar regla), status 1 significa UP (desactivar regla)
-        enabled = data['heartbeat']['status'] == 0
-        logger.debug(f"Estado del monitor: {'DOWN' if data['heartbeat']['status'] == 0 else 'UP'} - La regla se {'activará' if enabled else 'desactivará'}.")
+    if not is_valid:
+        return jsonify({"error": message}), 400
 
-        # Buscar y actualizar la regla
-        routes = get_traffic_routes()
-        for route in routes:
-            if route['description'] == NOMBRE_PBR:
-                success, response = update_traffic_route_status(route, enabled)
-                if success:
-                    logger.info(f"Regla '{NOMBRE_PBR}' {'activada' if enabled else 'desactivada'} correctamente.")
-                    send_notification(f"Regla *{NOMBRE_PBR}* {'activada' if enabled else 'desactivada'} correctamente en Unifi {UNIFI_URL}", parse_mode="Markdown")
-                    return jsonify({
-                        "message": f"Regla '{NOMBRE_PBR}' {'activada' if enabled else 'desactivada'} correctamente.",
-                        "data": response
-                    }), 200
-                else:
-                    return jsonify(response), 400
+    if is_test:
+        logger.info("Prueba desde Uptime Kuma satisfactoria.")
+        return jsonify({"message": message})
 
-        return jsonify({"error": f"No se encontró la regla: {NOMBRE_PBR}."}), 404
+    response_data = {
+        "unifi": {"processed": False, "message": "No procesado"},
+        "cloudflare": {"processed": False, "message": "No procesado"}
+    }
 
-    return app
+    # Primero, obtener la IP pública si es necesario
+    ip_publica = None
+    cloudflare_config_valid, cloudflare_message = check_cloudflare_config()
+    if cloudflare_config_valid and enabled:
+        try:
+            ip_publica = obtener_ip_publica()
+            if ip_publica:
+                logger.info(f"IP pública obtenida: {ip_publica}")
+            else:
+                logger.warning("No se pudo obtener la IP pública")
+        except Exception as e:
+            logger.error(f"Error al obtener IP pública: {str(e)}")
 
-app = create_app()
+    # Procesar Cloudflare si está configurado
+    if cloudflare_config_valid:
+        try:
+            estado_webhook = 'activado' if enabled else 'desactivado'
+            logger.info(f"Procesando configuraciones de Cloudflare para estado: {estado_webhook}")
+            procesar_zonas(estado_webhook, ip_publica)
+            mensaje = f"Configuraciones de Cloudflare procesadas correctamente para estado: {estado_webhook}"
+            logger.info(mensaje)
+            response_data["cloudflare"] = {"processed": True, "message": mensaje}
+            send_notification(f"🌍 *Cloudflare*: Configuraciones procesadas para estado: *{estado_webhook}*",
+                           "Estado CLOUDFLARE", parse_mode="Markdown")
+        except Exception as e:
+            error_msg = f"Error al procesar configuraciones de Cloudflare: {str(e)}"
+            logger.error(error_msg)
+            response_data["cloudflare"] = {"processed": False, "message": error_msg}
+    else:
+        logger.info(f"Cloudflare no configurado: {cloudflare_message}")
+        response_data["cloudflare"] = {"processed": False, "message": cloudflare_message}
 
-if __name__ == '__main__':
+    # Procesar Unifi si está configurado
+    unifi_config_valid, unifi_message = check_unifi_config()
+    if unifi_config_valid:
+        try:
+            routes = get_traffic_routes()
+            for route in routes:
+                if route['description'] == NOMBRE_PBR:
+                    success, route_response = update_traffic_route_status(route, enabled)
+                    action_msg = 'activada' if enabled else 'desactivada'
+                    if success:
+                        mensaje = f"Regla '{NOMBRE_PBR}' {action_msg} correctamente"
+                        logger.info(mensaje)
+                        response_data["unifi"] = {"processed": True, "message": mensaje}
+                        send_notification(
+                            f"⚽ Regla *{NOMBRE_PBR}* {action_msg} correctamente en Unifi {UNIFI_URL}",
+                            "Estado UNIFI",
+                            parse_mode="Markdown"
+                        )
+                    else:
+                        error_msg = f"Error al {action_msg} la regla '{NOMBRE_PBR}'"
+                        logger.error(error_msg)
+                        response_data["unifi"] = {"processed": False, "message": error_msg}
+                    break
+            else:
+                error_msg = f"No se encontró la regla: {NOMBRE_PBR}"
+                logger.error(error_msg)
+                response_data["unifi"] = {"processed": False, "message": error_msg}
+        except Exception as e:
+            error_msg = f"Error procesando Unifi: {str(e)}"
+            logger.error(error_msg)
+            response_data["unifi"] = {"processed": False, "message": error_msg}
+    else:
+        logger.info(f"Unifi no configurado: {unifi_message}")
+        response_data["unifi"] = {"processed": False, "message": unifi_message}
+
+    # Si ninguno está configurado, devolver error
+    if not cloudflare_config_valid and not unifi_config_valid:
+        return jsonify({
+            "error": "No hay configuración válida para Cloudflare ni Unifi",
+            "details": response_data
+        }), 500
+
+    return jsonify(response_data)
+
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=1666)

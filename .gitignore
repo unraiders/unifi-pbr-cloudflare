@@ -2,7 +2,7 @@
 .DS_Store
 
 # Project files
-gunicorn.conf.py
+zonas.json
 
 # Ruff files
 .ruff_cache

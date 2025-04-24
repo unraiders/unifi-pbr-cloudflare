@@ -1,0 +1,3 @@
+https://checkip.amazonaws.com
+https://ipinfo.io/ip
+https://api.ipify.org

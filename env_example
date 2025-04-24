@@ -1,10 +1,11 @@
-UNIFI_URL= URL acceso Unifi
-UNIFI_API_TOKEN= Token acceso Unifi
-NOMBRE_PBR= Nombre del Policy-Based Routing
-CLIENTE_NOTIFICACION= telegram / discord
+UNIFI_URL=
+UNIFI_API_TOKEN=
+NOMBRE_PBR=
+CLIENTE_NOTIFICACION=
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 DISCORD_WEBHOOK=
-WORKERS=1 # Número de peticiones simultáneas
-DEBUG=1 # Salida del log: 0 = normal / 1 = detalle
+CLOUDFLARE_API_URL=https://api.cloudflare.com/client/v4
+CLOUDFLARE_API_TOKEN=
+DEBUG=0
 TZ=Europe/Madrid

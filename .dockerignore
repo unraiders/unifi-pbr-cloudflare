@@ -7,3 +7,5 @@
 !requirements.txt
 !unifi-pbr-cloudflare.py
 !utils.py
+!ip_info.py
+!cloudflare_zones.py

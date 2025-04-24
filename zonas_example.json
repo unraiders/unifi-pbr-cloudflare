@@ -1,0 +1,20 @@
+[
+    {
+        "id_zona": "",
+        "nombre": "",
+        "contenido_anterior": "",
+        "target_cname": "",
+        "target_cname_anterior": "",
+        "cambiar_proxied": false,
+        "cambiar_ip": false
+    },
+    {
+        "id_zona": "",
+        "name": "",
+        "contenido_anterior": "",
+        "target_cname": "",
+        "target_cname_anterior": "",
+        "cambiar_proxied": false,
+        "cambiar_ip": false
+    }
+]

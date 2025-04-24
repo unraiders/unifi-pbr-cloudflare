@@ -1,4 +1,5 @@
 # Cambios en esta versión
 
 ## Novedades
-- ✨ Añadido soporte de notificación a Discord cuando se activa o desactiva la ruta en el router de Unifi.
+- ✨ Añadido soporte para controlar el Proxied, la IP y los túneles en Cloudflare.
+    - Añadidas nuevas variables de entorno: CLOUDFLARE_API_URL y CLOUDFLARE_API_TOKEN.
