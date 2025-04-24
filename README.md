@@ -111,10 +111,6 @@ La VERSIÓN indica cuando se añadió esa variable o cuando sufrió alguna actua
 
 ---
 
-Te puedes descargar la imagen del icono desde aquí: https://raw.githubusercontent.com/unraiders/unifi-pbr-cloudflare/master/imagenes/unifi-pbr-cloudflare.png
-
----
-
 ### Ejemplo docker-compose.yml (con fichero .env aparte)
 ```yaml
 services:
