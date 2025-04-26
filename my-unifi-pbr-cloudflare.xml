@@ -32,4 +32,5 @@
   <Config Name="CLOUDFLARE_API_TOKEN" Target="CLOUDFLARE_API_TOKEN" Default="" Mode="" Description="Token para el acceso a Cloudflare a través de la API." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="DEBUG" Target="DEBUG" Default="0|1" Mode="" Description="Habilita el modo Debug en el log. (0 = No / 1 = Si)" Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="TZ" Target="TZ" Default="Europe/Madrid" Mode="" Description="Timezone (Por ejemplo: Europe/Madrid)" Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="DATOS" Target="/app/data" Default="" Mode="rw" Description="Ruta de la carpeta en la que guardar los ficheros necesarios." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/unifi-pbr-cloudflare/data/</Config>
 </Container>
